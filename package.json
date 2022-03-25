@@ -1,0 +1,33 @@
+{
+  "name": "redisgoose",
+  "description": "A redis cache for mongoose",
+  "author": "mrTomatolegit",
+  "version": "1.0.0",
+  "main": "index.js",
+  "typings": "./typings/index.d.ts",
+  "scripts": {
+    "lint": "eslint . --fix"
+  },
+  "dependencies": {
+    "recacheman": "^2.2.4",
+    "recacheman-redis": "^2.1.5"
+  },
+  "peerDependencies": {
+    "mongoose": "^6.2.8"
+  },
+  "devDependencies": {
+    "eslint": "^8.11.0"
+  },
+  "license": "MIT",
+  "directories": {
+    "test": "tests"
+  },
+  "keywords": [
+    "cache",
+    "redis",
+    "redis-cache",
+    "mongoose",
+    "mongoose-redis",
+    "mongodb"
+  ]
+}
