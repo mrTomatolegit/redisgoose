@@ -142,7 +142,7 @@ type RedisClient = {};
 declare function init(options: string | RedisClient | ClientConfiguration): void;
 
 declare namespace init {
-    export function clearCache(key?: string): Promise<void>;
+    export function clearCache(key?: string): Promise<number>;
     export const redisManager: RedisManager;
 }
 export = init;
