@@ -1,5 +1,7 @@
 const { Model } = require('mongoose');
 
+const isObject = x => typeof x === 'object' && x !== null;
+
 function resolveCacheString(arg, subcall = 0) {
     if (typeof arg === 'string') return arg;
     if (Array.isArray(arg)) {
@@ -7,7 +9,7 @@ function resolveCacheString(arg, subcall = 0) {
         if (subcall !== 0) str = `[${str}]`;
         return str;
     }
-    if (typeof arg === 'object') {
+    if (isObject(arg)) {
         let str = Object.entries(arg)
             .map(([k, v]) => `${k}=${resolveCacheString(v, subcall + 1)}`)
             .join(':');
