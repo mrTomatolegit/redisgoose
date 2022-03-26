@@ -8,8 +8,11 @@
   "scripts": {
     "lint": "eslint . --fix"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mrTomatolegit/redisgoose"
+  },
   "dependencies": {
-    "recacheman": "^2.2.4",
     "recacheman-redis": "^2.1.5"
   },
   "peerDependencies": {
