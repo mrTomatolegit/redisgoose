@@ -24,22 +24,31 @@ class RedisManager {
         });
     }
 
-    async del(key) {
+    async del(...keys) {
         return new Promise((res, rej) => {
-            this.client.del(key, err => {
+            this.client.client.unlink(...keys.map(x => `${this.client.prefix}${x}`), (err, x) => {
                 if (err) return rej(err);
-                return res();
+                return res(x);
             });
         });
     }
 
     async clear() {
         return new Promise((res, rej) => {
-            this.client.clear(err => {
+            this.client.client.keys(`${this.client.prefix}*`, (err, data) => {
                 if (err) return rej(err);
-                return res();
+                if (data.length > 0) {
+                    this.client.client.unlink(...data, (err, count) => {
+                        if (err) return rej(err);
+                        res(count);
+                    });
+                } else res();
             });
         });
+    }
+
+    disconnect(flush = true) {
+        this.client.client.end(flush);
     }
 }
 
