@@ -47,7 +47,7 @@ class RedisManager {
         });
     }
 
-    disconnect(flush = true) {
+    disconnect(flush = false) {
         this.client.client.end(flush);
     }
 }
