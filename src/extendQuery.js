@@ -1,13 +1,13 @@
 const { Query } = require('mongoose');
-/**
- * @param {import('./RedisManager')} redisManager
- */
-function extendQuery(redisManager) {
+const warnNoInit = require('./warnNoInit');
+
+function extendQuery() {
     const exec = Query.prototype.exec;
-    Query.redisManager = redisManager;
+
+    Query.prototype.cacheCalled = false; // Whether to contact redis at all
 
     Query.prototype.checkCache = true; // Whether to check redis cache for this query
-    Query.prototype.cacheResult = false; // Whether to cache result for this query
+    Query.prototype.cacheResult = true; // Whether to cache result for this query
     Query.prototype.cacheKey = undefined; // The key used to store the result in redis
     Query.prototype.cacheLifetime = undefined; // The lifetime of the cached result
 
@@ -18,9 +18,13 @@ function extendQuery(redisManager) {
      * @returns
      */
     Query.prototype.cache = function (lifetime, key) {
-        this.cacheResult = true;
-        this.cacheLifetime = lifetime;
-        if (!this.cacheKey) this.setCacheKey(key);
+        if (Query.redisManager) {
+            this.cacheCalled = true;
+            this.cacheLifetime = lifetime;
+            if (!this.cacheKey) this.setCacheKey(key);
+        } else {
+            warnNoInit();
+        }
         return this;
     };
 
@@ -30,15 +34,20 @@ function extendQuery(redisManager) {
      * @returns
      */
     Query.prototype.setCacheKey = function (key) {
-        if (!key) {
-            key = JSON.stringify({
-                ...this.getQuery(),
-                collection: this.mongooseCollection.name,
-                op: this.op,
-                options: this.options
-            });
+        if (Query.redisManager) {
+            this.cacheCalled = true;
+            if (!key) {
+                key = JSON.stringify({
+                    ...this.getQuery(),
+                    collection: this.mongooseCollection.name,
+                    op: this.op,
+                    options: this.options
+                });
+            }
+            this.cacheKey = key;
+        } else {
+            warnNoInit();
         }
-        this.cacheKey = key;
         return this;
     };
 
@@ -65,18 +74,25 @@ function extendQuery(redisManager) {
      * @returns
      */
     Query.prototype.exec = async function () {
-        const cacheValue = this.checkCache ? await redisManager.get(this.cacheKey) : undefined;
+        if (Query.redisManager) {
+            const cacheValue =
+                this.checkCache && this.cacheCalled
+                    ? await Query.redisManager.get(this.cacheKey)
+                    : undefined;
 
-        if (cacheValue === undefined) {
-            const result = await exec.apply(this, arguments);
-            if (this.cacheResult) {
-                redisManager.set(this.cacheKey, result, this.cacheLifetime);
+            if (cacheValue === undefined) {
+                const result = await exec.apply(this, arguments);
+                if (this.cacheResult && this.cacheCalled) {
+                    Query.redisManager.set(this.cacheKey, result, this.cacheLifetime);
+                }
+                return result;
+            } else if (cacheValue === null) {
+                return cacheValue;
+            } else {
+                return this.model.hydrate(cacheValue);
             }
-            return result;
-        } else if (cacheValue === null) {
-            return cacheValue;
         } else {
-            return this.model.hydrate(cacheValue);
+            return exec.apply(this, arguments);
         }
     };
 }
