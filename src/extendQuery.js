@@ -88,6 +88,8 @@ function extendQuery() {
                 return result;
             } else if (cacheValue === null) {
                 return cacheValue;
+            } else if (Array.isArray(cacheValue)) {
+                return cacheValue.map(x => this.model.hydrate(x));
             } else {
                 return this.model.hydrate(cacheValue);
             }
