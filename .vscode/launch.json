@@ -6,7 +6,7 @@
     "configurations": [
         {
             "name": "Base Test",
-            "program": "${workspaceFolder}\\tests\\Base.test.js",
+            "program": "${workspaceFolder}\\tests\\basic.js",
             "request": "launch",
             "skipFiles": ["<node_internals>/**"],
             "type": "pwa-node"
