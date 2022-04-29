@@ -22,7 +22,7 @@ declare module 'mongoose' {
          * makeCacheKey({ name: 'test', foo: 'bar' })
          * ```
          */
-        makeCacheKey(arg: object): string;
+        makeCacheKey(...args: any[]): string;
     }
 
     interface Query<ResultType, DocType, THelpers = {}, RawDocType = DocType> {
